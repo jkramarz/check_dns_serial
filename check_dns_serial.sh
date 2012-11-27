@@ -1,8 +1,9 @@
 #!/bin/bash
 
-ZONE=$1
-NS1=$2
-NS2=$3
+NS1="ns1"
+NS2="ns2"
+RELNS1=1
+RELNS2=1
 
 STATE_OK=0
 STATE_WARNING=1
@@ -12,30 +13,84 @@ STATE_UNKNOWN=3
 RETURN=$STATE_UNKNOWN
 OUTPUT="UNKNOWN: cannot test"
 
+function usage() {
+	cat << EOF
+Usage: $0 <OPTIONS>
+Checks DNS zone serial numbers 
+Options:
+-z DNS zone
+-n NS1 (absolute)
+-s NS2 (absolute)
+-r NS1 (relative, defaults to $NS1, cannot be used with -n)
+-b NS2 (relative, defaults to $NS2, cannot be used with -s)
+-h Prints this help message
+Example: $0 -z example.com -n ns.example.com -b ns1  
+EOF
+}
+
 function quit {
 	echo $OUTPUT
 	exit $RETURN
 }
 
-if [ "$(echo "$NS1" | grep '\.$')" = "" ]; then
-	NS1=$(echo "$NS1.$ZONE.")
+while getopts "hz:n:s:r:b:" OPTION; do
+	case $OPTION in
+	h)
+		usage
+		exit 1
+		;;
+	z)
+		ZONE="$OPTARG"
+		;;
+	n)
+		NS1="$OPTARG"
+		RELNS1=0
+		;;
+	s)
+		NS2="$OPTARG"
+		RELNS2=0
+		;;
+	r)
+		NS1="$OPTARG"
+		;;
+	b)
+		NS2="$OPTARG"
+		;;
+	*)
+		echo "Invalid option"
+		usage
+		exit 1;
+		;;
+	?)
+		usage
+		exit 0
+		;;
+	esac
+done
+
+[ -n "$ZONE" ] || { echo "No zone specified." ; exit $STATE_UNKNOWN; }
+[ -n "$NS1" ] || { echo "No NS1 specified." ; exit $STATE_UNKNOWN; }
+[ -n "$NS2" ] || { echo "No NS2 specified." ; exit $STATE_UNKNOWN; }
+
+if [ "$RELNS1" = 1 ]; then
+	NS1=$(echo "$NS1.$ZONE")
 fi
 
-if [ "$(echo "$NS2" | grep '\.$')" = "" ]; then
-	NS2=$(echo "$NS2.$ZONE.")
+if [ "$RELNS2" = 1 ]; then
+	NS2=$(echo "$NS2.$ZONE")
 fi
 
 SERIAL1=$(dig @$NS1 $ZONE soa +short | cut -d' ' -f3)
 SERIAL2=$(dig @$NS2 $ZONE soa +short | cut -d' ' -f3)
 
 if [ "$SERIAL1" = "" ]; then
-	RETURN=STATE_UNKNOWN
+	RETURN=$STATE_UNKNOWN
 	OUTPUT="UNKNOWN: ns1 not responding"
 	quit
 fi
 
 if [ "$SERIAL2" = "" ]; then
-	RETURN=STATE_UNKNOWN
+	RETURN=$STATE_UNKNOWN
 	OUTPUT="UNKNOWN: ns2 not responding"
 	quit
 fi
