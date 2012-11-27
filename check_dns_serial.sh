@@ -19,10 +19,10 @@ Usage: $0 <OPTIONS>
 Checks DNS zone serial numbers 
 Options:
 -z DNS zone
--n NS1 (absolute)
--s NS2 (absolute)
--r NS1 (relative, defaults to $NS1, cannot be used with -n)
--b NS2 (relative, defaults to $NS2, cannot be used with -s)
+-M NS1 (absolute)
+-S NS2 (absolute)
+-m NS1 (relative, defaults to $NS1, cannot be used with -M)
+-s NS2 (relative, defaults to $NS2, cannot be used with -S)
 -h Prints this help message
 Example: $0 -z example.com -n ns.example.com -b ns1  
 EOF
@@ -33,7 +33,7 @@ function quit {
 	exit $RETURN
 }
 
-while getopts "hz:n:s:r:b:" OPTION; do
+while getopts "hz:M:S:m:s:" OPTION; do
 	case $OPTION in
 	h)
 		usage
@@ -42,18 +42,18 @@ while getopts "hz:n:s:r:b:" OPTION; do
 	z)
 		ZONE="$OPTARG"
 		;;
-	n)
+	M)
 		NS1="$OPTARG"
 		RELNS1=0
 		;;
-	s)
+	S)
 		NS2="$OPTARG"
 		RELNS2=0
 		;;
-	r)
+	m)
 		NS1="$OPTARG"
 		;;
-	b)
+	s)
 		NS2="$OPTARG"
 		;;
 	*)
