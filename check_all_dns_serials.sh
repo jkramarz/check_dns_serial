@@ -71,10 +71,10 @@ fi
 SERIAL_COUNT=$i
 CMP=${SERIALS[1]}
 
-i=1
-for x in SERIALS
+i=0
+for x in ${SERIALS[@]}
 do
-	if [ "$CMP" = "${SERIALS[$i]}" ]; then
+	if [ "$CMP" = "$x" ]; then
 		i=$[$i + 1];
 	fi
 done
