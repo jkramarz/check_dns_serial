@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 LEVEL="warn"
 
@@ -54,8 +54,6 @@ done
 [ -n "$ZONE" ] || { echo "No zone specified." ; exit $STATE_UNKNOWN; }
 [ -n "$LEVEL" ] || { echo "No notification level specified." ; exit $STATE_UNKNOWN; }
 
-# SERVER_COUNT=$(dig $ZONE +nssearch | wc -l)
-
 declare -a SERIALS
 i=0
 for x in $(dig $ZONE +nssearch | cut -d' ' -f4)
@@ -71,19 +69,19 @@ if [ -z "$i" ]; then
 fi
 
 SERIAL_COUNT=$i
-CMP=${SERIALS[0]}
+CMP=${SERIALS[1]}
 
-i=0
+i=1
 for x in SERIALS
 do
-	if [ "$CMP" = "${SERIALS[$i]}"]; then
+	if [ "$CMP" = "${SERIALS[$i]}" ]; then
 		i=$[$i + 1];
 	fi
 done
 
 if [ "$i" = "$SERIAL_COUNT" ]; then
 	RETURN=$STATE_OK
-	OUTPUT="OK: serial $(SERIALS[0])"
+	OUTPUT="OK: serial ${SERIALS[1]}"
 else
 	if [ "$LEVEL" = "crit" ]; then
 		RETURN=$STATE_CRITICAL
