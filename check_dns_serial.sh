@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 NS1="ns1"
 NS2="ns2"
