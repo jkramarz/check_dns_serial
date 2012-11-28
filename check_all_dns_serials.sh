@@ -104,10 +104,8 @@ else
 	for x in ${SERIALS[@]}
 		do
 			i=$[$i +1];
-			OUTPUT .= "$x"
-			OUTPUT .= " "
-			OUTPUT .= "${SERVERS[i]}"
-			OUTPUT .= "; "
+			OUTPUT="$OUTPUT$x "
+			OUTPUT="$OUTPUT${SERVERS[i]}; "
 		done
 fi
 
