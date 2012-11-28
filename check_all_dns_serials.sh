@@ -85,10 +85,10 @@ if [ "$i" = "$SERIAL_COUNT" ]; then
 else
 	if [ "$LEVEL" = "crit" ]; then
 		RETURN=$STATE_CRITICAL
-		OUTPUT="CRITICAL: serials different"
+		OUTPUT="CRITICAL: serials different: ${SERIALS[@]}"
 	else
 		RETURN=$STATE_WARNING
-		OUTPUT="WARNING: serials different"
+		OUTPUT="WARNING: serials different: ${SERIALS[@]}"
 	fi
 fi
 
