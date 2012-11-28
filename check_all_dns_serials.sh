@@ -55,11 +55,22 @@ done
 [ -n "$LEVEL" ] || { echo "No notification level specified." ; exit $STATE_UNKNOWN; }
 
 declare -a SERIALS
+declare -a SERVERS
 i=0
+
 for x in $(dig $ZONE +nssearch | cut -d' ' -f4)
 do
    i=$[$i + 1];
    SERIALS[$i]="$x"
+done
+
+SERIAL_COUNT=$i
+i=0
+
+for x in $(dig $ZONE +nssearch | cut -d' ' -f11)
+do
+	i=$[$i + 1];
+	SERVERS[$i]="$x"
 done
 
 if [ -z "$i" ]; then
@@ -68,7 +79,6 @@ if [ -z "$i" ]; then
 	quit
 fi
 
-SERIAL_COUNT=$i
 CMP=${SERIALS[1]}
 
 i=0
@@ -85,11 +95,20 @@ if [ "$i" = "$SERIAL_COUNT" ]; then
 else
 	if [ "$LEVEL" = "crit" ]; then
 		RETURN=$STATE_CRITICAL
-		OUTPUT="CRITICAL: serials different: ${SERIALS[@]}"
+		OUTPUT="CRITICAL: serials different: "
 	else
 		RETURN=$STATE_WARNING
-		OUTPUT="WARNING: serials different: ${SERIALS[@]}"
+		OUTPUT="WARNING: serials different: "
 	fi
+	i=0
+	for x in ${SERIALS[@]}
+		do
+			i=$[$i +1];
+			OUTPUT .= "$x"
+			OUTPUT .= " "
+			OUTPUT .= "${SERVERS[i]}"
+			OUTPUT .= "; "
+		done
 fi
 
 quit
