@@ -26,7 +26,7 @@ Options:
 -m NS1 (relative, defaults to $NS1, cannot be used with -M)
 -s NS2 (relative, defaults to $NS2, cannot be used with -S)
 -h Prints this help message
-Example: $0 -z example.com -n ns.example.com -b ns1 -l err 
+Example: $0 -z example.com -n ns.example.com -b ns1 -l crit 
 EOF
 }
 

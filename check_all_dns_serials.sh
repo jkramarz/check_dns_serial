@@ -18,7 +18,7 @@ Options:
 -z DNS zone
 -l Notification level (warn or crit, defaults to warn)
 -h Prints this help message
-Example: $0 -z example.com -n ns.example.com -b ns1 -l err 
+Example: $0 -z example.com -l crit 
 EOF
 }
 
@@ -76,7 +76,7 @@ CMP=${SERIALS[0]}
 i=0
 for x in SERIALS
 do
-	if [ "$CMP" = "$(SERIALS[$i])"]; then
+	if [ "$CMP" = "${SERIALS[$i]}"]; then
 		i=$[$i + 1];
 	fi
 done
