@@ -1,0 +1,95 @@
+#!/bin/bash
+
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
+RETURN=$STATE_UNKNOWN
+OUTPUT="UNKNOWN: cannot test"
+
+function usage() {
+	cat << EOF
+Usage: $0 <OPTIONS>
+Checks DNS zone serial numbers 
+Options:
+-z DNS zone
+-h Prints this help message
+Example: $0 -z example.com -l crit 
+EOF
+}
+
+function quit {
+	echo $OUTPUT
+	exit $RETURN
+}
+
+while getopts "hz:" OPTION; do
+	case $OPTION in
+	h)
+		usage
+		exit 1
+		;;
+	z)
+		ZONE="$OPTARG"
+		;;
+	*)
+		echo "Invalid option"
+		usage
+		exit 1;
+		;;
+	?)
+		usage
+		exit 0
+		;;
+	esac
+done
+
+[ -n "$ZONE" ] || { echo "No zone specified." ; exit $STATE_UNKNOWN; }
+
+declare -a SERIALS
+declare -a SERVERS
+
+i=1
+for x in $(dig $ZONE +nssearch | cut -d' ' -f4); do
+	SERIALS[$i]="$x"
+	i=$(( $i + 1 ))
+done
+
+i=1
+for x in $(dig $ZONE +nssearch | cut -d' ' -f11); do
+	SERVERS[$i]="$x"
+	i=$(( $i + 1 ))
+done
+
+if [ -z "$i" ]; then
+	RETURN=$STATE_UNKNOWN
+	OUTPUT="UNKNOWN: no serials"
+	quit
+fi
+
+read cmp < <(
+	for x in ${SERIALS[@]}; do
+		echo $x
+	done | sort -r -n | head -n 1
+)
+
+
+i=1
+read errors < <(
+for x in ${SERIALS[@]}; do
+	if [ "$cmp" != "$x" ]; then
+		echo "${SERVERS[i]}(${SERIALS[i]})"
+		i=$(( $i + 1 ))
+	fi
+done | paste -sd " " )
+
+if [ -z "$errors" ]; then
+	RETURN=$STATE_OK
+	OUTPUT="OK: serial ${SERIALS[1]}"
+else
+	RETURN=$STATE_CRITICAL
+	OUTPUT="CRITICAL: serials different from ${SERIALS[1]} on servers: $errors"
+fi
+
+quit
